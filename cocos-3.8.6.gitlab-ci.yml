@@ -4,6 +4,7 @@ include:
     file: "luminet.gitlab-ci.yml"
 
 variables:
+  COCOS_VERSION: "3.8.6"
   GIT_SUBMODULE_STRATEGY: recursive
   GIT_STRATEGY: clone
   COCOS_PROJECT_DIR: src
