@@ -33,14 +33,19 @@ variables:
         echo -e "\033[0;31mBuild folder size is less than 5MB (${BUILD_SIZE}MB). This might indicate an incomplete or corrupted build."
         exit 1
       fi
-    - npm run obfuscator-config-file --prefix "./$COCOS_PROJECT_DIR"
+    - |
+      if [ -z "${IS_NOT_OBFUSCATOR+x}" ] || [ "$IS_NOT_OBFUSCATOR" = "false" ]; then
+        npm run obfuscator-config-file --prefix "./$COCOS_PROJECT_DIR"
+      else
+        echo "IS_NOT_OBFUSCATOR is true. Ignore run obfuscator-config-file"
+      fi
   tags:
     - cocos-v3.8.4
   artifacts:
     when: always
     paths:
       - $COCOS_PROJECT_DIR/build/web-mobile
-      - $COCOS_PROJECT_DIR/site-configs
+      - $CONFIG_DEFAULT_PATH
     expire_in: 1 day
   cache:
     - key:
@@ -52,9 +57,7 @@ variables:
     - key: $CI_COMMIT_SHORT_SHA
       paths:
         - $COCOS_PROJECT_DIR/build/web-mobile
-    - key: "Configs-$CI_COMMIT_SHORT_SHA"
-      paths:
-        - $COCOS_PROJECT_DIR/site-configs
+        - $CONFIG_DEFAULT_PATH
 .base_build_cocos:
   <<: *build_cocos_creator_script
 
