@@ -1,6 +1,6 @@
 include:
   - project: "ci/core-cicd"
-    ref: main
+    ref: obfuscator-configs
     file: "luminet.gitlab-ci.yml"
 
 variables:
