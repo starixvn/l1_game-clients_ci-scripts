@@ -1,6 +1,6 @@
 include:
   - project: "ci/core-cicd"
-    ref: obfuscator-configs
+    ref: main
     file: "luminet.gitlab-ci.yml"
 
 variables:
@@ -45,7 +45,7 @@ variables:
     when: always
     paths:
       - $COCOS_PROJECT_DIR/build/web-mobile
-      - $CONFIG_DEFAULT_PATH
+      - $COCOS_CONFIG_FILE_PATH
     expire_in: 1 day
   cache:
     - key:
@@ -57,7 +57,7 @@ variables:
     - key: $CI_COMMIT_SHORT_SHA
       paths:
         - $COCOS_PROJECT_DIR/build/web-mobile
-        - $CONFIG_DEFAULT_PATH
+        - $COCOS_CONFIG_FILE_PATH
 .base_build_cocos:
   <<: *build_cocos_creator_script
 
