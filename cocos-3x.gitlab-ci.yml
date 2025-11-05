@@ -11,33 +11,34 @@ variables:
 .build_cocos_creator_script: &build_cocos_creator_script
   stage: test
   script:
-    - echo "====== Build Cocos Web Mobile ======"
+    - CHECK_TAG=$DEPLOY_ENV-$CI_REGISTRY_IMAGE_VERSION
+    - !reference [.check_image_exists_in_registry, script]
     - |
-      if [[ -d "./$COCOS_PROJECT_DIR/build/web-mobile" ]]; then
-        echo "Using cache with key $CI_COMMIT_SHA"
-        exit 0
-      fi
-    - node --version
-    - npm run install-dependencies --prefix "./$COCOS_PROJECT_DIR"
-    - set +e
-    - /Applications/CocosCreator/Creator/$COCOS_VERSION/CocosCreator.app/Contents/MacOS/CocosCreator --project "./$COCOS_PROJECT_DIR" --build "platform=web-mobile;debug=false;webOrientation=portrait;md5Cache=true;replaceSplashScreen=true"
-    - set -e
-    - |
-      if [ -z "$(ls -A ./$COCOS_PROJECT_DIR/build/web-mobile)" ]; then
-        echo -e "\033[0;31mFolder build is empty, please check the build scritp"
-        exit 1
-      fi
-    - |
-      BUILD_SIZE=$(du -sm "./$COCOS_PROJECT_DIR/build/web-mobile" | cut -f1)
-      if [ "$BUILD_SIZE" -lt 5 ]; then
-        echo -e "\033[0;31mBuild folder size is less than 5MB (${BUILD_SIZE}MB). This might indicate an incomplete or corrupted build."
-        exit 1
-      fi
-    - |
-      if [ -z "${IS_NOT_OBFUSCATOR+x}" ] || [ "$IS_NOT_OBFUSCATOR" = "false" ]; then
-        npm run obfuscator-config-file --prefix "./$COCOS_PROJECT_DIR"
-      else
-        echo "IS_NOT_OBFUSCATOR is true. Ignore run obfuscator-config-file"
+      if [ "$IMAGE_EXISTS_IN_REGISTRY" != "true" ]; then
+        echo "====== Build Cocos Web Mobile ======"
+        if [[ -d "./$COCOS_PROJECT_DIR/build/web-mobile" ]]; then
+          echo "Using cache with key $CI_COMMIT_SHORT_SHA"
+          exit 0
+        fi
+        node --version
+        npm run install-dependencies --prefix "./$COCOS_PROJECT_DIR"
+        set +e
+        /Applications/CocosCreator/Creator/$COCOS_VERSION/CocosCreator.app/Contents/MacOS/CocosCreator --project "./$COCOS_PROJECT_DIR" --build "platform=web-mobile;debug=false;webOrientation=portrait;md5Cache=true;replaceSplashScreen=true"
+        set -e
+        if [ -z "$(ls -A ./$COCOS_PROJECT_DIR/build/web-mobile)" ]; then
+          echo -e "\033[0;31mFolder build is empty, please check the build script"
+          exit 1
+        fi
+        BUILD_SIZE=$(du -sm "./$COCOS_PROJECT_DIR/build/web-mobile" | cut -f1)
+        if [ "$BUILD_SIZE" -lt 5 ]; then
+          echo -e "\033[0;31mBuild folder size is less than 5MB (${BUILD_SIZE}MB). This might indicate an incomplete or corrupted build."
+          exit 1
+        fi
+        if [ -z "${IS_NOT_OBFUSCATOR+x}" ] || [ "$IS_NOT_OBFUSCATOR" = "false" ]; then
+          npm run obfuscator-config-file --prefix "./$COCOS_PROJECT_DIR"
+        else
+          echo "IS_NOT_OBFUSCATOR is true. Ignore run obfuscator-config-file"
+        fi
       fi
   tags:
     - cocos-v3.8.4
@@ -252,7 +253,7 @@ unit_test_js:
 
 .sonar_js:
   before_script:
-    - - echo "===========Start Sonar Scanner============="
+    - echo "===========Start Sonar Scanner============="
     - echo $SRC_PATH
     - echo $TEST_PATH
     - cp ./src/tsconfig.sonar.json ./src/tsconfig.json
