@@ -1,6 +1,6 @@
 include:
   - project: "ci/core-cicd"
-    ref: main
+    ref: avoid_redundant_builds
     file: "luminet.gitlab-ci.yml"
 
 variables:
